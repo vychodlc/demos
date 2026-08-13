@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+.env*
+data
+test
+1panel
+*.tar.gz
+.DS_Store

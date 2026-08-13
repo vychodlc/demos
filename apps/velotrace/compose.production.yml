@@ -1,0 +1,17 @@
+services:
+  app:
+    build:
+      context: ../..
+      dockerfile: apps/velotrace/Dockerfile
+    container_name: velotrace-app
+    restart: unless-stopped
+    env_file: .env.production
+    ports:
+      - "127.0.0.1:4173:4173"
+    networks:
+      - onepanel
+
+networks:
+  onepanel:
+    external: true
+    name: 1panel-network

@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#11130f">
+  <title>VELOTRACE — 让每一次骑行留下痕迹</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="#top" aria-label="VELOTRACE 首页">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span>VELO<span>TRACE</span></span>
+    </a>
+    <nav aria-label="主导航">
+      <a class="nav-item active" href="#overview"><span>⌁</span>总览</a>
+      <a class="nav-item" href="#calendar"><span>▦</span>骑行日历</a>
+      <a class="nav-item" href="#trends"><span>⌁</span>趋势</a>
+      <a class="nav-item" href="#goals"><span>◉</span>目标</a>
+      <a class="nav-item" href="#routes"><span>⌁</span>轨迹</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <button class="nav-item" id="openImport"><span>↥</span>导入数据</button>
+      <div class="rider">
+        <div class="avatar">Y</div>
+        <div><strong>夜风骑手</strong><small>持续骑行中</small></div>
+      </div>
+    </div>
+  </aside>
+
+  <main id="top">
+    <header class="topbar">
+      <button class="mobile-brand" aria-label="打开菜单">VT</button>
+      <div><p class="eyebrow" id="dashboardEyebrow">你的骑行控制台</p><h1 id="dashboardTitle">继续向前。</h1></div>
+      <div class="top-actions">
+        <select id="yearSelect" aria-label="选择年份"></select>
+        <button class="button secondary" id="syncButton"><span class="sync-icon">↻</span>同步数据</button>
+        <button class="button primary" id="importButton">＋ 导入骑行</button>
+      </div>
+    </header>
+
+    <section class="overview" id="overview">
+      <div class="metric metric-primary">
+        <span id="distanceLabel">年度里程</span>
+        <strong><span id="distance">—</span><em>公里</em></strong>
+        <p id="distanceDelta">正在计算你的年度进度</p>
+      </div>
+      <div class="metric"><span>骑行次数</span><strong id="rides">—</strong><p><b id="activeDays">—</b> 个活跃日</p></div>
+      <div class="metric"><span>移动时间</span><strong><span id="hours">—</span><em>小时</em></strong><p>把时间花在风里</p></div>
+      <div class="metric"><span>累计爬升</span><strong><span id="elevation">—</span><em>米</em></strong><p id="climbCompare">正在翻越高山</p></div>
+    </section>
+
+    <section class="calendar-section" id="calendar">
+      <div class="section-head">
+        <div><p class="eyebrow" id="calendarEyebrow">CONSISTENCY / 持续性</p><h2 id="calendarTitle">每一格，都是你出发过的证明</h2></div>
+        <div class="segmented" id="calendarSegmented" role="group" aria-label="日历视图">
+          <button class="active" data-view="year">年</button><button data-view="month">月</button>
+        </div>
+      </div>
+      <div class="calendar-wrap" id="calendarWrap">
+        <div class="period-nav" id="periodNav" hidden>
+          <button id="previousPeriod" aria-label="上一周期">←</button>
+          <strong id="periodLabel"></strong>
+          <button id="nextPeriod" aria-label="下一周期">→</button>
+        </div>
+        <div class="month-labels" id="monthLabels"></div>
+        <div class="heatmap-shell">
+          <div class="weekday-labels"><span>一</span><span></span><span>三</span><span></span><span>五</span><span></span><span>日</span></div>
+          <div class="heatmap" id="heatmap" aria-label="年度骑行热力图"></div>
+        </div>
+        <div class="calendar-footer">
+          <span><i class="pulse-dot"></i><b id="streak">—</b> <span id="calendarNote">天最长连续骑行</span></span>
+          <span class="legend" id="calendarLegend">少 <i data-level="0"></i><i data-level="1"></i><i data-level="2"></i><i data-level="3"></i><i data-level="4"></i> 多</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="lower-grid" id="trends">
+      <div class="trend-panel">
+        <div class="section-head compact">
+          <div><p class="eyebrow" id="trendEyebrow">DISTANCE / 里程</p><h2 id="trendTitle">月度节奏</h2></div>
+          <strong class="trend-total"><span id="averageRide">—</span><small id="trendUnit">公里 / 次</small></strong>
+        </div>
+        <div class="chart" id="trendChart" aria-label="月度里程折线图"></div>
+      </div>
+      <aside class="goal-panel" id="goals">
+        <p class="eyebrow">NEXT MILESTONE / 下一里程碑</p>
+        <div class="goal-ring" id="goalRing"><div><strong id="goalPercent">—</strong><small>年度目标</small></div></div>
+        <h2 id="goalTitle">距离目标还有 — 公里</h2>
+        <p id="goalHint">保持现在的节奏，终点会主动向你靠近。</p>
+        <button class="text-button" id="editGoal">调整年度目标 <span>→</span></button>
+      </aside>
+    </section>
+
+    <section class="route-section" id="routes">
+      <div class="section-head route-head">
+        <div><p class="eyebrow">ROUTE STORIES / 轨迹</p><h2>把走过的路，再看一遍</h2></div>
+        <button class="button primary" id="shareRoute">生成分享图</button>
+      </div>
+      <div class="route-workspace">
+        <div class="route-stage">
+          <svg id="routeMap" viewBox="0 0 760 500" role="img" aria-label="所选骑行轨迹"></svg>
+          <div class="route-watermark"><span>VELOTRACE</span><small>THE ROAD REMEMBERS</small></div>
+        </div>
+        <aside class="route-inspector">
+          <p class="eyebrow">SELECTED RIDE</p>
+          <h3 id="routeName">选择一条骑行</h3>
+          <p class="route-date" id="routeDate">有轨迹的骑行会出现在这里</p>
+          <div class="route-stats">
+            <div><strong id="routeDistance">—</strong><small>公里</small></div>
+            <div><strong id="routeTime">—</strong><small>移动时间</small></div>
+            <div><strong id="routeElevation">—</strong><small>爬升米</small></div>
+          </div>
+          <div class="route-picker" id="routePicker"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="recent-section">
+      <div class="section-head compact"><div><p class="eyebrow">RECENT RIDES / 最近骑行</p><h2>刚刚留下的车辙</h2></div></div>
+      <div class="ride-list" id="rideList"></div>
+    </section>
+    <footer>VELOTRACE <span>•</span> 数据属于你，动力也属于你。</footer>
+  </main>
+
+  <dialog id="importDialog">
+    <form method="dialog" class="dialog-head"><div><p class="eyebrow">BRING YOUR RIDES</p><h2>把骑行带回来</h2></div><button class="close" value="cancel" aria-label="关闭">×</button></form>
+    <p class="dialog-copy">支持 Strava CSV / JSON，以及 iGPSPORT 导出的 FIT / GPX。所有文件只会发送到你自己的 VELOTRACE 服务。</p>
+    <label class="dropzone" id="dropzone">
+      <input id="fileInput" type="file" multiple accept=".csv,.json,.gpx,.fit">
+      <span class="upload-icon">↥</span><strong>拖到这里，或选择文件</strong><small>CSV · JSON · GPX · FIT，最多 60 MB</small>
+    </label>
+    <div class="selected-files" id="selectedFiles"></div>
+    <div class="source-actions">
+      <div><strong>连接 Strava</strong><small id="stravaStatus">正在检查连接状态…</small></div>
+      <button class="button strava" id="connectStrava" type="button">连接 STRAVA</button>
+    </div>
+    <div class="source-actions igpsport-source">
+      <div><strong>从 iGPSPORT 同步</strong><small>复制活动页面中的任意一条 curl 请求</small></div>
+      <button class="button igpsport-button" id="openIgpsport" type="button">导入 iGPSPORT</button>
+    </div>
+    <button class="button primary wide" id="uploadFiles" type="button" disabled>导入所选文件</button>
+  </dialog>
+
+  <dialog id="igpsportDialog" class="igpsport-dialog">
+    <form method="dialog" class="dialog-head"><div><p class="eyebrow">PRIVATE CONNECT / 私有连接</p><h2>同步 iGPSPORT</h2></div><button class="close" value="cancel" aria-label="关闭 iGPSPORT 导入">×</button></form>
+    <ol class="curl-steps">
+      <li><span>01</span><div><strong>打开 iGPSPORT 网页</strong><small>登录后进入“我的活动”，打开浏览器开发者工具。</small></div></li>
+      <li><span>02</span><div><strong>复制任意活动请求</strong><small>在 Network 中找到 queryMyActivity，右键 Copy as cURL。</small></div></li>
+      <li><span>03</span><div><strong>粘贴后开始同步</strong><small>服务器只解析 iGPSPORT 地址和 Bearer Token，绝不会执行命令。</small></div></li>
+    </ol>
+    <div class="credential-mode" role="group" aria-label="iGPSPORT 凭证输入方式"><button class="active" data-mode="curl" type="button">粘贴 curl</button><button data-mode="token" type="button">只粘贴 Token</button></div>
+    <label class="curl-input"><span id="igpsportCredentialLabel">iGPSPORT curl 请求</span><textarea id="igpsportCurl" spellcheck="false" autocomplete="off" placeholder="curl 'https://prod.zh.igpsport.com/…' \\&#10;  -H 'authorization: Bearer …'"></textarea></label>
+    <label class="igpsport-region" id="igpsportRegion" hidden>账号区域<select><option value="cn">中国区 · app.igpsport.cn</option><option value="global">国际区 · app.igpsport.com</option></select></label>
+    <p class="credential-note"><span>●</span> curl 原文不会写入数据库；本次任务结束后只保留同步数量和状态。Token 过期后需要重新粘贴。</p>
+    <div class="sync-progress" id="igpsportProgress" hidden>
+      <div><strong id="igpsportProgressTitle">正在读取活动…</strong><small id="igpsportProgressMeta">正在连接 iGPSPORT</small></div>
+      <div class="progress-track"><i id="igpsportProgressBar"></i></div>
+    </div>
+    <button class="button primary wide" id="startIgpsportSync" type="button" disabled>开始同步 iGPSPORT</button>
+  </dialog>
+
+  <dialog id="goalDialog" class="small-dialog">
+    <form method="dialog"><p class="eyebrow">YEARLY GOAL</p><h2>年度里程目标</h2><label>目标公里数<input id="goalInput" type="number" min="100" step="100" value="5000"></label><div class="dialog-actions"><button class="button secondary" value="cancel">取消</button><button class="button primary" id="saveGoal" value="default">保存目标</button></div></form>
+  </dialog>
+  <dialog id="shareDialog" class="share-dialog">
+    <form method="dialog" class="dialog-head"><div><p class="eyebrow">SHARE THE RIDE</p><h2>生成轨迹分享图</h2></div><button class="close" value="cancel" aria-label="关闭分享图">×</button></form>
+    <div class="share-layout">
+      <canvas id="shareCanvas" width="1080" height="1350" aria-label="轨迹分享图预览"></canvas>
+      <div class="share-controls">
+        <p>4:5 竖版海报，适合朋友圈、Instagram 与小红书。</p>
+        <label class="privacy-toggle"><input id="hideEndpoints" type="checkbox" checked><span></span><div><strong>隐去起终点</strong><small>分享图默认裁去轨迹首尾 8%</small></div></label>
+        <label>骑行感言<textarea id="shareCaption" maxlength="42">风从耳边经过，路在身后发光。</textarea></label>
+        <button class="button primary wide" id="downloadShare" type="button">下载 PNG 分享图</button>
+      </div>
+    </div>
+  </dialog>
+  <div class="tooltip" id="tooltip" role="status"></div>
+  <div class="toast" id="toast" role="status"></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

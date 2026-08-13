@@ -1,0 +1,11 @@
+node_modules/
+.next/
+.vercel/
+*.tsbuildinfo
+
+.env
+.env.*
+!.env.example
+
+apps/**/data/strava-token.json
+.DS_Store

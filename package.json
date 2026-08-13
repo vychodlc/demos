@@ -1,0 +1,19 @@
+{
+  "name": "@vychod/demos",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:portal": "npm run dev --workspace=@vychod/portal",
+    "dev:velotrace": "npm run dev --workspace=@vychod/velotrace",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
