@@ -1,6 +1,6 @@
 const state = {
   year: new Date().getFullYear(), view: 'year', month: new Date().getMonth(),
-  summary: null, activities: [], routes: [], selectedRoute: null, files: [], goal: 5000,
+  summary: null, activities: [], routes: [], selectedRoute: null, files: [], goal: 5000, routeView: '2d',
 };
 
 const APP_BASE = '';
@@ -250,6 +250,22 @@ function svgPath(points) {
   return points.map((point, index) => `${index ? 'L' : 'M'}${point[0].toFixed(1)},${point[1].toFixed(1)}`).join(' ');
 }
 
+function routeElevation(route) {
+  const elevations = (route || []).map(point => Number(point[2])).filter(Number.isFinite);
+  return elevations.length >= 2 ? elevations : null;
+}
+
+function render3dRoute(ride) {
+  const route = ride.route || [], elevations = routeElevation(route), projected = projectRoute(route, 590, 320, 32).map(point => [point[0] + 84, point[1] + 48]);
+  if (projected.length < 2) return '<text x="380" y="250" text-anchor="middle" fill="#8d9585" font-size="13">这条骑行没有足够的轨迹点</text>';
+  const values = elevations ? projected.map((_, index) => elevations[Math.min(index, elevations.length - 1)]) : projected.map((_, index) => index), minElevation = Math.min(...values), maxElevation = Math.max(...values), elevationSpan = Math.max(1, maxElevation - minElevation);
+  const points = projected.map(([x, y], index) => { const normalized = (values[index] - minElevation) / elevationSpan, depth = index / Math.max(1, projected.length - 1) * 56; return [x - depth * .42, y + depth * .24 - normalized * 105]; });
+  const shadow = points.map(([x, y]) => [x + 18, y + 22]), grid = Array.from({ length: 7 }, (_, index) => { const y = 100 + index * 48; return `<path class="route-3d-grid" d="M70 ${y} L690 ${y - 85}"/><path class="route-3d-grid" d="M${90 + index * 88} 65 L${90 + index * 88 - 72} 420"/>`; }).join('');
+  const path = svgPath(points), shadowPath = svgPath(shadow), start = points[0], end = points.at(-1);
+  $('#route3dMeta').hidden = false; $('#route3dMeta').textContent = elevations ? `海拔 ${Math.round(minElevation)}–${Math.round(maxElevation)} m` : '此路线没有海拔点数据';
+  return `<g class="route-3d-scene">${grid}<path class="route-3d-shadow" d="${shadowPath}"/><path class="route-3d-line" d="${path}"/><circle class="route-start" cx="${start[0]}" cy="${start[1]}" r="7"/><circle class="route-end" cx="${end[0]}" cy="${end[1]}" r="7"/><text class="route-3d-label" x="70" y="455">${elevations ? 'ELEVATION PROFILE / 海拔透视' : 'ROUTE SHAPE / 无海拔点'}</text></g>`;
+}
+
 function selectRoute(id, shouldScroll = false) {
   state.selectedRoute = state.routes.find(route => route.id === id) || state.routes[0] || null;
   renderRoute();
@@ -259,6 +275,7 @@ function selectRoute(id, shouldScroll = false) {
 function renderRoute() {
   const ride = state.selectedRoute;
   const svg = $('#routeMap');
+  $('#route3dMeta').hidden = true;
   if (!ride) {
     svg.innerHTML = '<text x="380" y="250" text-anchor="middle" fill="#8d9585" font-size="13">导入 GPX / FIT，或连接 Strava 后查看轨迹</text>';
     $('#routeName').textContent = '还没有路线'; $('#routeDate').textContent = '汇总 CSV 不包含 GPS 轨迹';
@@ -266,15 +283,16 @@ function renderRoute() {
     $('#routePicker').innerHTML = ''; $('#shareRoute').disabled = true; return;
   }
   $('#shareRoute').disabled = false;
-  const points = projectRoute(ride.route, 700, 440, 34).map(point => [point[0] + 30, point[1] + 30]);
-  const path = svgPath(points); const start = points[0], end = points.at(-1);
-  svg.innerHTML = `<path class="route-shadow" d="${path}"/><path class="route-line" d="${path}"/><circle class="route-start" cx="${start[0]}" cy="${start[1]}" r="7"/><circle class="route-end" cx="${end[0]}" cy="${end[1]}" r="7"/>`;
+  if (state.routeView === '3d') svg.innerHTML = render3dRoute(ride);
+  else { const points = projectRoute(ride.route, 700, 440, 34).map(point => [point[0] + 30, point[1] + 30]); const path = svgPath(points); const start = points[0], end = points.at(-1); svg.innerHTML = `<path class="route-shadow" d="${path}"/><path class="route-line" d="${path}"/><circle class="route-start" cx="${start[0]}" cy="${start[1]}" r="7"/><circle class="route-end" cx="${end[0]}" cy="${end[1]}" r="7"/>`; }
   $('#routeName').textContent = ride.name;
   $('#routeDate').textContent = new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }).format(new Date(ride.startTime));
   $('#routeDistance').textContent = ride.distanceKm.toFixed(1); $('#routeTime').textContent = duration(ride.movingSeconds); $('#routeElevation').textContent = fmt(ride.elevationM);
   $('#routePicker').innerHTML = state.routes.slice(0, 8).map(route => `<button class="route-choice${route.id === ride.id ? ' active' : ''}" data-route-id="${safe(route.id)}"><div><span>${safe(route.name)}</span><small>${safe(route.date)} · ${safe(route.source)}</small></div><b>${route.distanceKm.toFixed(0)} km</b></button>`).join('');
   $$('.route-choice').forEach(button => button.addEventListener('click', () => selectRoute(button.dataset.routeId)));
 }
+
+function setRouteView(view) { state.routeView = view; $$('.route-view-toggle button').forEach(button => button.classList.toggle('active', button.dataset.routeView === view)); renderRoute(); }
 
 function drawPoster() {
   const ride = state.selectedRoute; if (!ride) return;
@@ -498,6 +516,7 @@ $('#editGoal').addEventListener('click', () => { $('#goalInput').value = state.g
 $('#saveGoal').addEventListener('click', async event => { event.preventDefault(); try { const result = await request('/api/goal', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ annualGoal: Number($('#goalInput').value) }) }); state.goal = result.annualGoal; $('#goalDialog').close(); renderMetrics(); showToast('年度目标已更新'); } catch (error) { showToast(error.message); } });
 $('#logoutButton')?.addEventListener('click', async () => { await request('/api/auth/logout', { method: 'POST' }); window.location.href = `${APP_BASE}/login`; });
 $('#shareRoute').addEventListener('click', openShare);
+$$('.route-view-toggle button').forEach(button => button.addEventListener('click', () => setRouteView(button.dataset.routeView)));
 $('#downloadShare').addEventListener('click', downloadPoster);
 $('#hideEndpoints').addEventListener('change', drawPoster);
 $('#shareCaption').addEventListener('input', drawPoster);

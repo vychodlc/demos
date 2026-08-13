@@ -96,11 +96,11 @@
     <section class="route-section" id="routes">
       <div class="section-head route-head">
         <div><p class="eyebrow">ROUTE STORIES / 轨迹</p><h2>把走过的路，再看一遍</h2></div>
-        <button class="button primary" id="shareRoute">生成分享图</button>
+        <div class="route-actions"><div class="route-view-toggle" role="group" aria-label="轨迹视图"><button class="active" type="button" data-route-view="2d">2D 平面</button><button type="button" data-route-view="3d">3D 海拔</button></div><button class="button primary" id="shareRoute">生成分享图</button></div>
       </div>
       <div class="route-workspace">
         <div class="route-stage">
-          <svg id="routeMap" viewBox="0 0 760 500" role="img" aria-label="所选骑行轨迹"></svg>
+          <svg id="routeMap" viewBox="0 0 760 500" role="img" aria-label="所选骑行轨迹"></svg><div class="route-3d-meta" id="route3dMeta" hidden></div>
           <div class="route-watermark"><span>VELOTRACE</span><small>THE ROAD REMEMBERS</small></div>
         </div>
         <aside class="route-inspector">
